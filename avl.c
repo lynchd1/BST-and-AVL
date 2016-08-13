@@ -24,6 +24,7 @@ typedef struct {
 } tree_t;
 
 tree_t* make_empty_avl_tree(void);
+int height_tree(node_t *head);
 tree_t* insert_into_avl_tree(tree_t *tree, data_t value);
 tree_t *right_rotate(tree_t *tree, node_t *pivot);
 void print_tree(node_t *head);
@@ -163,6 +164,34 @@ tree_t *right_rotate(tree_t *tree, node_t *pivot) {
 		
 	}
 	return tree;
+	
+}
+
+int height_tree(node_t *head) {
+	int left, right;
+	
+	if ((head->left == NULL) && (head->right == NULL)) { //When end of branch reached
+		head->depth = 1;
+		return 1;
+		
+	} else if ((head->left == NULL) && (head->right != NULL)) {
+		head->depth = height_tree(head->right);
+		return  head->depth + 1;
+		
+	} else if ((head->left != NULL) && (head->right == NULL)) {
+		head->depth = height_tree(head->left);
+		return head->depth + 1;
+	} else {
+		left  = height_tree(head->left) + 1;
+		right = height_tree(head->right) +1;
+		if (left >= right) {
+			head->depth = left;
+			return left;
+		} else {
+			head->depth = right;
+			return right;
+		}
+	}
 	
 }
 
