@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 	
 	
 	
-	//Demonstrating right rotation at head of tree
+	//Demonstrating right rotation at head of tree (Use input 3 2 1 to test )
 	print_tree(tree->head);
 	tree = right_rotate(tree, tree->head);
 	printf("\n");
