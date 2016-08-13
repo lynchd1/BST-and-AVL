@@ -25,7 +25,7 @@ typedef struct {
 
 tree_t* make_empty_avl_tree(void);
 tree_t* insert_into_avl_tree(tree_t *tree, data_t value);
-void right_rotate(node_t *pivot);
+tree_t *right_rotate(tree_t *tree, node_t *pivot);
 void print_tree(node_t *head);
 
 int main(int argc, char *argv[]) {
@@ -58,10 +58,12 @@ int main(int argc, char *argv[]) {
 	}
 	
 	
+	
+	//Demonstrating right rotation at head of tree
 	print_tree(tree->head);
-	node_t *ptr = tree->head->left;
-	right_rotate(tree->head);
-	print_tree(ptr);
+	tree = right_rotate(tree, tree->head);
+	printf("\n");
+	print_tree(tree->head);
 	free(tree);
 	return 0;
 	
@@ -127,20 +129,23 @@ tree_t* insert_into_avl_tree(tree_t *tree, data_t value) {
 	
 }
 
-void right_rotate(node_t *pivot) {
+tree_t *right_rotate(tree_t *tree, node_t *pivot) {
 	
 	if (pivot->previous == NULL) {		 // Case when pivot is the head of tree
 		
 		if (pivot->left !=NULL) { 							// Left Left case
+			pivot->previous = pivot->left;
 			pivot->left->previous = NULL;
 			pivot->left->right = pivot;
 			pivot->left = NULL;
 		} else {											// Right Left Case
+			pivot->previous = pivot->right;
 			pivot->right->previous = pivot->right->left;
 			pivot->right->left->right = pivot->right;
 			pivot->right = pivot->right->left;
 			pivot->right->right->right = NULL;
 		}
+		tree->head = pivot->previous;
 		
 	} else { 							// Cases when pivot is not head of tree
 		
@@ -157,7 +162,7 @@ void right_rotate(node_t *pivot) {
 		pivot->left = NULL;
 		
 	}
-	return;
+	return tree;
 	
 }
 
