@@ -139,14 +139,15 @@ tree_t *right_rotate(tree_t *tree, node_t *pivot) {
 			pivot->left->previous = NULL;
 			pivot->left->right = pivot;
 			pivot->left = NULL;
+			tree->head = pivot->previous;
 		} else {											// Right Left Case
-			pivot->previous = pivot->right;
 			pivot->right->previous = pivot->right->left;
 			pivot->right->left->right = pivot->right;
 			pivot->right = pivot->right->left;
-			pivot->right->right->right = NULL;
+			pivot->right->right->left = NULL;
+			pivot->right->previous = pivot;
 		}
-		tree->head = pivot->previous;
+		
 		
 	} else { 							// Cases when pivot is not head of tree
 		
