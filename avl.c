@@ -15,57 +15,70 @@ struct node{
 	node_t *previous;
 	int depth;
 	int balance;
+	int depth_down;
 } ;
 
 typedef struct {
 	
 	node_t *head;
+	int num_nodes;
+	int tree_depth;
 	
 } tree_t;
 
 tree_t* make_empty_avl_tree(void);
-int height_tree(node_t *head);
+node_t *create_node(void);
 tree_t* insert_into_avl_tree(tree_t *tree, data_t value);
+int height_tree(node_t *head);
+int is_in_tree(node_t *node, data_t value);
+
+void depth_down_values(node_t *node, int top);
+
+
+
 tree_t *right_rotate(tree_t *tree, node_t *pivot);
 void print_tree(node_t *head);
 
+
+
+
 int main(int argc, char *argv[]) {
 	
-	printf("Making a new tree\n");
-	
-	tree_t *tree;
-	
-	tree = make_empty_avl_tree();
 	int i;
 	
 	
-	// make_empty_list should return a pointer to a tree that is not NULL
-	if (tree != NULL) {
-		printf("Made tree successfully\n");
-	} else {
-		printf("Failure");
-	}
+	printf("Making a new tree\n");
+	tree_t *tree;
+	tree = make_empty_avl_tree();
 	
-	// Head should equal NULL after making an empty tree 
-	if (tree->head == NULL) {
-		printf("Head is NULL\n");
-	} else {
-		printf("Head is not null, points to %p\n", tree->head);
-	}
-	
+	printf("Enter intergers to insert inton tree: ");
 	while ((scanf("%d", &i)==1)) {
 		insert_into_avl_tree(tree, i);
 		printf("Inserted i = %d\n", i);
 	}
 	
 	
+	printf("The height of the tree is %d, the number of nodes is %d\n", height_tree(tree->head), tree->num_nodes);
 	
-	//Demonstrating right rotation at head of tree (Use input 3 2 1 to test )
+	printf("Enter a value to check if it is in the tree: ");
+	if (scanf("%d", &i) == 1) {
+		if (is_in_tree(tree->head, i)) {
+			printf("%d is in the tree\n", i);
+		} else {
+			printf("%d is not in tree\n", i);
+		}
+		
+	} else {
+		printf("Unsuccessful Insertion\n");
+	}
+	
+	tree->head->depth_down = 0;
+	
+	depth_down_values(tree->head, 0);
+	
+	tree->tree_depth = tree->head->depth;
 	print_tree(tree->head);
-	tree = right_rotate(tree, tree->head);
-	printf("\n");
-	print_tree(tree->head);
-	free(tree);
+	
 	return 0;
 	
 }
@@ -78,32 +91,48 @@ tree_t* make_empty_avl_tree(void) {
 	tree = (tree_t*)malloc(sizeof(tree_t)); // Allocating space for the tree 
 	assert(tree != NULL);					// Checking malloc worked
 	tree->head = NULL;
+	tree->num_nodes = 0;
 	return tree; 
 	
+}
+
+node_t *create_node(void) {
+	
+	node_t *node;
+	node = (node_t*)malloc(sizeof(node_t));
+	assert(node != NULL);
+	node->previous = NULL;
+	node->left = NULL;
+	node->right = NULL;
+	node->depth = 1;
+	node->balance = 0;
+	
+	return node;
 }
 
 tree_t* insert_into_avl_tree(tree_t *tree, data_t value) {
 	
 	node_t *ptr = tree->head;
-	node_t *prev;
+	node_t *above;
 	node_t *newnode;
 	
 	int lastdirection = 0;
 	
-	newnode = (node_t*)malloc(sizeof(node_t));
-	assert(newnode != NULL);
+	newnode = create_node();
 	newnode->data = value;
-	newnode->left = NULL;
-	newnode->right = NULL;
-	newnode->previous = NULL;
+	tree->num_nodes++;
+
 	
 	if (tree->head == NULL) {
 		tree->head = newnode;
 		return tree;
 	}
 	
+	
+	// Using -1 to indictate ptr last moved left and 1 for last moved right
+	// Above is the node above ptr
 	while (ptr != NULL) {
-		prev = ptr;
+		above = ptr;
 		if (value <= ptr->data) {
 			ptr = ptr->left;
 			lastdirection = -1;
@@ -114,11 +143,11 @@ tree_t* insert_into_avl_tree(tree_t *tree, data_t value) {
 		
 	}
 	
-	newnode->previous = prev;
+	newnode->previous = above;
 	if (lastdirection == -1) {
-		prev->left = newnode;
+		above->left = newnode;
 	} else if (lastdirection == 1) {
-		prev->right = newnode;
+		above->right = newnode;
 	} else {
 		printf("Fatal Error");
 		exit(EXIT_FAILURE);
@@ -127,6 +156,25 @@ tree_t* insert_into_avl_tree(tree_t *tree, data_t value) {
 	
 	return tree;
 	
+	
+}
+
+// Node inserted should be the trees head
+int is_in_tree(node_t *node, data_t value) {
+	
+	if (value == node->data) {
+		return 1;
+		
+	} else if (value <= node->data && node->left != NULL) {
+		return is_in_tree(node->left, value);
+		
+	} else if (value > node->data && node->right != NULL) {
+		return is_in_tree(node->right, value);
+		
+	} else {
+		return 0;
+	}
+
 	
 }
 
@@ -198,21 +246,52 @@ int height_tree(node_t *head) {
 
 void print_tree(node_t *head){
 	
-	if (head == NULL) {
-		printf("Empty Tree\n");
-		return;
-	} 
+	int i;
 	
-	printf("%d\t", head->data);
-	
-	if (head->left != NULL) {
-		print_tree(head->left);
-	} 
-	
-	if (head->right != NULL ) {
+	if (head->right != NULL) {
 		print_tree(head->right);
+	} else {
+		for (i = 0; i <= head->depth_down + 1; i++) {
+			printf("____");
+		}
 	}
 	
+	
+	
+	printf("\n");
+	
+	for (i = 0; i <= head->depth_down; i++) {
+		printf("____");
+	}
+	printf("%d\n", head->data);
+		
+		
+		
+		
+		
+		
+	if (head->left != NULL) {
+		print_tree(head->left);
+	} else {
+		for (i = 0; i <= head->depth_down + 1; i++) {
+			printf("____");
+		}
+	}
+	
+	return;
+}
+
+void depth_down_values(node_t *node, int top) {
+	
+	node->depth_down = top;
+	
+	if (node->left != NULL) {
+		depth_down_values(node->left, top+1);
+	}
+	
+	if (node->right != NULL) {
+		depth_down_values(node->right, top+1);
+	}
 	
 	return;
 }
